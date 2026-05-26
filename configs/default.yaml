@@ -1,0 +1,73 @@
+mode: paper
+log_level: INFO
+data_dir: ./data
+model_dir: ./models
+log_dir: ./logs
+
+symbols:
+  - BTC/USDT
+  - ETH/USDT
+  - SOL/USDT
+  - BNB/USDT
+
+exchanges:
+  binance:
+    name: binance
+    testnet: true
+    rate_limit: 6000
+
+risk:
+  max_position_pct: 0.05
+  max_gross_exposure: 2.0
+  max_drawdown_pct: 0.15
+  daily_loss_limit_pct: 0.05
+  max_leverage: 3.0
+  circuit_breaker_dd_pct: 0.10
+
+evolution:
+  population_size: 1000
+  num_islands: 10
+  generations: 1000
+  mutation_rate: 0.25
+  crossover_rate: 0.70
+  elitism_pct: 0.10
+  immigration_pct: 0.05
+  tournament_size: 5
+  sharpe_weight: 0.35
+  sortino_weight: 0.25
+  max_dd_weight: 0.20
+  win_rate_weight: 0.10
+  stability_weight: 0.10
+
+regime:
+  hmm_states: 4
+  bocpd_hazard_rate: 0.01
+  lookback_days: 90
+
+world_model:
+  scenario_count: 10000
+  simulation_horizon_days: 30
+
+swarm:
+  ant_colony_size: 100
+  particle_swarm_size: 500
+  bee_colony_size: 50
+  max_iterations: 1000
+
+consciousness:
+  reflection_interval_hours: 1
+  goal_review_interval_hours: 24
+  uncertainty_threshold: 0.7
+  min_confidence_for_live: 0.6
+
+backtest:
+  initial_capital: 100000
+  slippage_bps: 5
+  commission_bps: 10
+  lookback_days: 365
+  walk_forward_train_days: 180
+  walk_forward_test_days: 30
+
+evolution_interval_hours: 168
+paper_trial_days: 21
+meta_learning_interval_hours: 720
