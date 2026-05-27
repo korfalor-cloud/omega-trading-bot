@@ -5,8 +5,10 @@ from .greeks import BlackScholesCalculator
 from .tail_risk import TailRiskAnalyzer
 from .volatility import VolatilityModel, VolForecast
 from .factor_models import FactorModel, FactorResult, PCAResult
+from .risk_budgeting import RiskBudgeter, RiskBudgetResult
 
 __all__ = [
     "RiskManager", "VaRModel", "BlackScholesCalculator", "TailRiskAnalyzer",
     "VolatilityModel", "VolForecast", "FactorModel", "FactorResult", "PCAResult",
+    "RiskBudgeter", "RiskBudgetResult",
 ]
