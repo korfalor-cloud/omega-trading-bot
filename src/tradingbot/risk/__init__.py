@@ -6,9 +6,11 @@ from .tail_risk import TailRiskAnalyzer
 from .volatility import VolatilityModel, VolForecast
 from .factor_models import FactorModel, FactorResult, PCAResult
 from .risk_budgeting import RiskBudgeter, RiskBudgetResult
+from .limits import RiskLimitsEngine, LimitType, LimitBreach, LimitCheck, RiskLimit
 
 __all__ = [
     "RiskManager", "VaRModel", "BlackScholesCalculator", "TailRiskAnalyzer",
     "VolatilityModel", "VolForecast", "FactorModel", "FactorResult", "PCAResult",
     "RiskBudgeter", "RiskBudgetResult",
+    "RiskLimitsEngine", "LimitType", "LimitBreach", "LimitCheck", "RiskLimit",
 ]
