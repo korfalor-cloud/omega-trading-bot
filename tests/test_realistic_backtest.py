@@ -35,8 +35,8 @@ class TestRealisticBacktester:
 
     def test_slippage_buy(self, bt):
         fill = bt.simulate_market_order("BTC/USDT", "buy", 0.1, 50000)
-        # 5 bps slippage on 50000 = 2.5
-        assert fill.fill_price == pytest.approx(50002.5, abs=5)
+        # 5 bps slippage on 50000 = 25
+        assert fill.fill_price == pytest.approx(50025, abs=5)
 
     def test_slippage_sell(self, bt):
         fill = bt.simulate_market_order("BTC/USDT", "sell", 0.1, 50000)

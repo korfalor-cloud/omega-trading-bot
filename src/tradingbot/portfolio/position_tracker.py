@@ -80,9 +80,10 @@ class PositionTracker:
             pos.average_entry = (old_cost + price * quantity) / abs(new_qty) if new_qty != 0 else 0
         elif abs(new_qty) < abs(old_qty):
             # Reducing position — realize P&L
-            pnl = (price - pos.average_entry) * quantity * sign
-            if old_qty < 0:
-                pnl = (pos.average_entry - price) * quantity * sign
+            if old_qty > 0:
+                pnl = (price - pos.average_entry) * quantity
+            else:
+                pnl = (pos.average_entry - price) * quantity
             pos.realized_pnl += pnl
 
         pos.quantity = new_qty
