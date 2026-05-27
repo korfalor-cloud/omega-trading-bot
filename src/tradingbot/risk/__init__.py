@@ -3,5 +3,10 @@ from .risk_manager import RiskManager
 from .var_models import VaRModel
 from .greeks import BlackScholesCalculator
 from .tail_risk import TailRiskAnalyzer
+from .volatility import VolatilityModel, VolForecast
+from .factor_models import FactorModel, FactorResult, PCAResult
 
-__all__ = ["RiskManager", "VaRModel", "BlackScholesCalculator", "TailRiskAnalyzer"]
+__all__ = [
+    "RiskManager", "VaRModel", "BlackScholesCalculator", "TailRiskAnalyzer",
+    "VolatilityModel", "VolForecast", "FactorModel", "FactorResult", "PCAResult",
+]
