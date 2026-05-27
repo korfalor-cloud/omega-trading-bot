@@ -1,4 +1,6 @@
 """Market data pipeline — fetching, caching, and resampling."""
 from .market_data import MarketDataFetcher, CachedDataProvider
+from .order_book import OrderBookAnalyzer
+from .trade_aggregator import TradeAggregator
 
-__all__ = ["MarketDataFetcher", "CachedDataProvider"]
+__all__ = ["MarketDataFetcher", "CachedDataProvider", "OrderBookAnalyzer", "TradeAggregator"]
