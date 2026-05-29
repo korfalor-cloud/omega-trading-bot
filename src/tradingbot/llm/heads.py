@@ -211,7 +211,7 @@ class TradingLoss(nn.Module):
         self.gamma = gamma
 
         self.candle_loss_fn = nn.CrossEntropyLoss(ignore_index=-100)
-        self.signal_loss_fn = nn.CrossEntropyLoss()
+        self.signal_loss_fn = nn.CrossEntropyLoss(label_smoothing=0.1)
         self.confidence_loss_fn = nn.MSELoss()
 
     def forward(

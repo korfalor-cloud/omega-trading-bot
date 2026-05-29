@@ -11,6 +11,7 @@ from .position_sizing import PositionSizer, SizingResult
 from .correlation import CorrelationAnalyzer, CorrelationResult
 from .drawdown import DrawdownMonitor, DrawdownState
 from .stress_testing import StressTester, StressResult
+from .margin import MarginCalculator, MarginResult
 
 __all__ = [
     "RiskManager", "VaRModel", "BlackScholesCalculator", "TailRiskAnalyzer",
@@ -21,4 +22,5 @@ __all__ = [
     "CorrelationAnalyzer", "CorrelationResult",
     "DrawdownMonitor", "DrawdownState",
     "StressTester", "StressResult",
+    "MarginCalculator", "MarginResult",
 ]

@@ -186,15 +186,34 @@ class CandleDataset(Dataset):
         }
 
     def _augment(self, candles: np.ndarray) -> np.ndarray:
-        """Apply data augmentation: small random price perturbations."""
-        # Add small Gaussian noise to OHLCV (0.1% of price)
-        noise_scale = 0.001
-        for i in range(4):  # OHLC columns
+        """Apply data augmentation: noise, scaling, time warping."""
+        # 1. Gaussian noise (0.15% of price)
+        noise_scale = 0.0015
+        for i in range(4):
             base = candles[:, i]
             noise = np.random.normal(0, noise_scale * np.abs(base))
             candles[:, i] = base + noise
 
-        # Ensure OHLC consistency (high >= max(open, close), low <= min(open, close))
+        # 2. Random price scaling (0.98-1.02)
+        scale = np.random.uniform(0.98, 1.02)
+        candles[:, :4] *= scale
+
+        # 3. Random volume scaling (0.8-1.2)
+        vol_scale = np.random.uniform(0.8, 1.2)
+        candles[:, 4] *= vol_scale
+
+        # 4. Random candle dropout (zero out 1-3 random candles)
+        n_drop = np.random.randint(0, min(4, len(candles)))
+        if n_drop > 0:
+            drop_idx = np.random.choice(len(candles), n_drop, replace=False)
+            for idx in drop_idx:
+                mid = candles[idx, 0]  # use open as center
+                candles[idx, 0] = mid  # open stays
+                candles[idx, 3] = mid  # close = open (doji)
+                candles[idx, 1] = mid * 1.001  # tiny high
+                candles[idx, 2] = mid * 0.999  # tiny low
+
+        # Ensure OHLC consistency
         candles[:, 1] = np.maximum(candles[:, 1], np.maximum(candles[:, 0], candles[:, 3]))
         candles[:, 2] = np.minimum(candles[:, 2], np.minimum(candles[:, 0], candles[:, 3]))
 

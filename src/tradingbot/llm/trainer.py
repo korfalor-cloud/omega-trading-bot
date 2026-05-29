@@ -352,6 +352,8 @@ class CandleTrainer:
         best_val_loss = float("inf")
         checkpoint_dir = Path(self.config.CHECKPOINT_DIR)
         checkpoint_dir.mkdir(parents=True, exist_ok=True)
+        patience = 15
+        patience_counter = 0
 
         print(f"Training on {self.device}")
         print(f"  Model parameters: {self.model.count_parameters():,}")
@@ -389,11 +391,14 @@ class CandleTrainer:
             # Save best checkpoint
             if val_losses["total"] < best_val_loss:
                 best_val_loss = val_losses["total"]
+                patience_counter = 0
                 self.save_checkpoint(
                     str(checkpoint_dir / "best_model.pt"),
                     epoch,
                     best_val_loss,
                 )
+            else:
+                patience_counter += 1
 
             # Periodic checkpoint
             if epoch % self.config.SAVE_EVERY == 0:
@@ -403,10 +408,15 @@ class CandleTrainer:
                     val_losses["total"],
                 )
 
+            # Early stopping
+            if patience_counter >= patience:
+                print(f"\nEarly stopping at epoch {epoch} (no improvement for {patience} epochs)")
+                break
+
         # Save final model
         self.save_checkpoint(
             str(checkpoint_dir / "final_model.pt"),
-            self.config.EPOCHS,
+            epoch,
             val_losses["total"],
         )
 

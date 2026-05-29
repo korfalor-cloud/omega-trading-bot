@@ -60,7 +60,7 @@ class ModelConfig:
     N_HEADS: int = 8                     # attention heads
     N_LAYERS: int = 12                   # transformer blocks
     D_FF: int = 2048                     # feed-forward hidden dim
-    DROPOUT: float = 0.1
+    DROPOUT: float = 0.2
     MAX_SEQ_LEN: int = 512              # max tokens in context
 
     # Multi-scale attention
@@ -78,7 +78,7 @@ class ModelConfig:
 class TrainingConfig:
     # Optimization
     LEARNING_RATE: float = 3e-4
-    WEIGHT_DECAY: float = 0.01
+    WEIGHT_DECAY: float = 0.05
     BETA1: float = 0.9
     BETA2: float = 0.95
     BATCH_SIZE: int = 32
