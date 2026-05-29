@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  omega-bot:
+    build: .
+    container_name: omega-trading-bot
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./reports:/app/reports
+      - ./config.yaml:/app/config.yaml
+    environment:
+      - OMEGA_SYSTEM_LOG_LEVEL=INFO
+      - OMEGA_TRADING_MODE=paper
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: omega-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+volumes:
+  redis-data:

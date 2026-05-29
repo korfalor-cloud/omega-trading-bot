@@ -1,0 +1,53 @@
+system:
+  name: Omega Trading Bot
+  version: "1.0.0"
+  log_level: INFO
+  data_dir: data
+  db_path: data/omega.db
+
+exchange:
+  name: binance
+  api_key: ""
+  api_secret: ""
+  testnet: true
+  rate_limit: 1200
+
+trading:
+  mode: paper
+  initial_capital: 100000
+  max_positions: 10
+  max_position_pct: 0.10
+  default_stop_loss: 0.02
+  default_take_profit: 0.04
+
+risk:
+  max_drawdown: 0.15
+  max_daily_loss: 0.03
+  max_leverage: 3.0
+  max_concentration: 0.40
+  circuit_breaker_enabled: true
+
+evolution:
+  enabled: true
+  population_size: 50
+  mutation_rate: 0.15
+  crossover_rate: 0.7
+  elite_pct: 0.1
+  max_generations: 1000
+  eval_interval_hours: 24
+
+strategies:
+  active:
+    - trend_following
+    - mean_reversion
+    - momentum
+  max_active: 5
+  min_sharpe: 0.5
+  min_trades: 20
+
+monitoring:
+  alerts_enabled: true
+  telegram_enabled: false
+  telegram_token: ""
+  telegram_chat_id: ""
+  dashboard_port: 8080
