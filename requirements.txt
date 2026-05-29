@@ -1,0 +1,64 @@
+# Core
+pydantic==2.11.3
+pydantic-settings==2.9.1
+pyyaml==6.0.2
+structlog==24.4.0
+
+# Exchange connectivity
+ccxt==4.4.56
+alpaca-py==0.37.0
+
+# Data & indicators
+pandas==2.2.3
+numpy==1.26.4
+pandas-ta==0.3.14b1
+scipy==1.14.1
+
+# Async / HTTP
+aiohttp==3.11.18
+websockets==15.0.1
+httpx==0.28.1
+anyio==4.9.0
+asyncio-mqtt==0.16.2
+
+# Web framework (health endpoint)
+fastapi==0.115.12
+uvicorn==0.34.2
+
+# Database
+sqlalchemy==2.0.40
+alembic==1.15.2
+aiosqlite==0.21.0
+
+# ML / Evolution
+scikit-learn==1.6.1
+xgboost==2.1.4
+lightgbm==4.6.0
+torch==2.6.0
+pytorch-forecasting==1.2.0
+hmmlearn==0.3.3
+
+# Genetic programming
+deap==1.4.1
+
+# Optimization
+optuna==4.3.0
+
+# Causal inference
+dowhy==0.12
+networkx==3.4.2
+
+# Security
+cryptography==44.0.3
+PyJWT==2.10.1
+
+# Monitoring
+prometheus-client==0.22.1
+
+# Dev / CI tools
+pytest==8.3.5
+pytest-asyncio==0.25.3
+pytest-cov==6.1.1
+flake8==7.2.0
+mypy==1.15.0
+ruff==0.11.8

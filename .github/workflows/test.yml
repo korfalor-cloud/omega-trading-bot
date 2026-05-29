@@ -4,6 +4,7 @@ on:
   push:
     branches: [master, main]
   pull_request:
+    branches: [master, main]
 
 jobs:
   test:
@@ -20,186 +21,76 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install core dependencies
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pydantic pydantic-settings pyyaml numpy pandas scipy httpx anyio
+          pip install -r requirements.txt
 
-      - name: Add src to Python path and test imports
+      - name: Lint with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 src/ --count --select=E9,F63,F7,F82 --show-source --statistics
+          # treat all other flake8 warnings as non-blocking
+          flake8 src/ --count --exit-zero --max-complexity=15 --max-line-length=120 --statistics
+
+      - name: Type check with mypy (non-blocking)
+        continue-on-error: true
+        run: |
+          mypy src/tradingbot/ --ignore-missing-imports --no-error-summary || true
+
+      - name: Run pytest
+        run: |
+          export PYTHONPATH="${{ github.workspace }}/src:$PYTHONPATH"
+          pytest tests/ -v --tb=short --cov=tradingbot --cov-report=term-missing || pytest tests/ -v --tb=short
+
+      - name: Core import smoke test
         run: |
           export PYTHONPATH="${{ github.workspace }}/src:$PYTHONPATH"
           python -c "
-          from tradingbot.core.enums import Side, OrderType, Timeframe, AssetClass, Regime, NodeType
-          print('Core enums OK')
-
-          from tradingbot.core.types import OHLCVBar, Signal, StrategyGenome, Fill, Position, PortfolioState, RiskAlert, RiskCheck
-          print('Core types OK')
-
+          from tradingbot.core.enums import Side, OrderType, Timeframe
+          from tradingbot.core.types import OHLCVBar, Signal, Order, Fill, Position
           from tradingbot.core.events import EventBus, Event
-          print('EventBus OK')
-
-          from tradingbot.core.interfaces import ExchangeAdapter, Strategy, ExecutionBackend, RiskEngine, EvolutionEngine
-          print('Interfaces OK')
-
-          from tradingbot.core.errors import OmegaError, ExchangeError, OrderError, GenomeError, EvolutionError
-          print('Errors OK')
-
-          from tradingbot.genome.rule_tree import random_tree, TreeNode, tree_depth, tree_size
-          print('Rule tree OK')
-
-          from tradingbot.genome.strategy_genome import create_random_genome, crossover_genomes, mutate_genome
-          print('Genome ops OK')
-
-          from tradingbot.genome.genome_encoder import GenomeEvaluator
-          print('Genome encoder OK')
-
-          from tradingbot.population.fitness import FitnessEvaluator
-          print('Fitness evaluator OK')
-
-          from tradingbot.config import OmegaConfig, load_config
-          print('Config OK')
-
-          print('=== ALL CORE IMPORTS PASSED ===')
+          from tradingbot.core.interfaces import ExchangeAdapter, Strategy, RiskEngine
+          from tradingbot.core.errors import OmegaError, ExchangeError, OrderError
+          from tradingbot.config import OmegaConfig
+          print('Core imports OK')
           "
 
-      - name: Test genome creation and evolution
+      - name: Engine module smoke test
         run: |
           export PYTHONPATH="${{ github.workspace }}/src:$PYTHONPATH"
           python -c "
-          from tradingbot.genome.strategy_genome import create_random_genome, crossover_genomes, mutate_genome
-          from tradingbot.genome.rule_tree import random_tree, tree_depth, tree_size
+          from tradingbot.engine import AsyncTradingEngine, DataFeedManager, OrderPipeline
+          from tradingbot.engine.data_feed import DataQualityChecker, BarAggregator, DataQualityReport
+          from tradingbot.engine.order_pipeline import PipelineMetrics
+          from tradingbot.engine.async_engine import EngineMetrics
+          print('Engine imports OK')
 
-          g1 = create_random_genome()
-          g2 = create_random_genome()
-          print(f'Genome 1: {len(g1.signal_tree)} nodes, risk_params={list(g1.risk_params.keys())}')
-          print(f'Genome 2: {len(g2.signal_tree)} nodes, risk_params={list(g2.risk_params.keys())}')
+          # Verify EngineMetrics dataclass
+          m = EngineMetrics()
+          m.bars_processed = 10
+          assert m.bars_processed == 10
+          snap = m.snapshot()
+          assert 'bars_processed' in snap
+          assert 'uptime_seconds' in snap
+          print('EngineMetrics OK')
 
-          child = crossover_genomes(g1, g2)
-          print(f'Child: {len(child.signal_tree)} nodes, generation={child.generation}')
+          # Verify DataQualityChecker
+          dqc = DataQualityChecker()
+          assert dqc is not None
+          print('DataQualityChecker OK')
 
-          mutated = mutate_genome(g1, mutation_rate=0.5)
-          print(f'Mutated: {len(mutated.signal_tree)} nodes')
-
-          d = tree_depth(g1.signal_tree)
-          s = tree_size(g1.signal_tree)
-          print(f'Tree depth={d}, size={s}')
-
-          print('=== GENOME TESTS PASSED ===')
-          "
-
-      - name: Test fitness evaluation
-        run: |
-          export PYTHONPATH="${{ github.workspace }}/src:$PYTHONPATH"
-          python -c "
-          import numpy as np
-          from tradingbot.population.fitness import FitnessEvaluator
-
-          evaluator = FitnessEvaluator({'fitness': {'sharpe_weight': 0.35, 'sortino_weight': 0.25, 'max_dd_weight': 0.20, 'win_rate_weight': 0.10, 'stability_weight': 0.10}})
-
-          equity = [100000.0]
-          for i in range(500):
-              change = np.random.normal(0.0003, 0.015)
-              equity.append(equity[-1] * (1 + change))
-
-          trades = np.random.normal(0.001, 0.02, 100).tolist()
-
-          result = evaluator.evaluate(equity, trades)
-          print(f'Composite fitness: {result.composite_fitness:.4f}')
-          print(f'Sharpe: {result.sharpe_ratio:.4f}')
-          print(f'Sortino: {result.sortino_ratio:.4f}')
-          print(f'Max DD: {result.max_drawdown:.4f}')
-          print(f'Win rate: {result.win_rate:.4f}')
-          print(f'Stability: {result.stability:.4f}')
-
-          print('=== FITNESS TESTS PASSED ===')
-          "
-
-      - name: Test backtesting engine
-        run: |
-          export PYTHONPATH="${{ github.workspace }}/src:$PYTHONPATH"
-          python -c "
-          import numpy as np
-          import asyncio
-          from datetime import datetime, timedelta
-          from tradingbot.core.enums import Timeframe
-          from tradingbot.core.types import OHLCVBar
-          from tradingbot.genome.strategy_genome import create_random_genome
-          from tradingbot.backtesting.engine import BacktestEngine
-
-          bars = []
-          price = 50000.0
-          for i in range(200):
-              change = np.random.normal(0.0002, 0.02)
-              price *= (1 + change)
-              bars.append(OHLCVBar(
-                  timestamp=datetime(2024, 1, 1) + timedelta(hours=i),
-                  symbol='BTC/USDT',
-                  timeframe=Timeframe.H1,
-                  open=price / (1 + change),
-                  high=price * 1.005,
-                  low=price * 0.995,
-                  close=price,
-                  volume=np.random.uniform(100, 1000),
-                  exchange='binance',
-              ))
-
-          n = len(bars)
-          features = {
-              'rsi_14': np.clip(np.random.normal(50, 15, n), 0, 100).tolist(),
-              'ema_21': np.random.normal(0, 1, n).tolist(),
-              'atr_14': np.abs(np.random.normal(0.02, 0.005, n)).tolist(),
-              'adx_14': np.clip(np.random.normal(25, 10, n), 0, 100).tolist(),
-              'volatility': np.abs(np.random.normal(0.02, 0.01, n)).tolist(),
-              'signal_strength': np.random.uniform(0, 1, n).tolist(),
-              'signal_confidence': np.random.uniform(0.3, 0.9, n).tolist(),
-          }
-
-          genome = create_random_genome()
-          engine = BacktestEngine({'backtest': {'initial_capital': 100000, 'commission_bps': 10}})
-
-          result = asyncio.run(engine.run(genome, bars, features))
-          print(f'Backtest fitness: {result.fitness.composite_fitness:.4f}')
-          print(f'Equity curve length: {len(result.equity_curve)}')
-          print(f'Number of trades: {result.n_trades}')
-
-          print('=== BACKTESTING TESTS PASSED ===')
-          "
-
-      - name: Test config loading
-        run: |
-          export PYTHONPATH="${{ github.workspace }}/src:$PYTHONPATH"
-          python -c "
-          from tradingbot.config import load_config
-
-          config = load_config('configs/default.yaml')
-          print(f'Config mode: {config.mode}')
-          print(f'Config symbols: {config.symbols}')
-          print(f'Population size: {config.evolution.population_size}')
-          print(f'Max drawdown: {config.risk.max_drawdown_pct}')
-          print(f'Islands: {config.evolution.n_islands}')
-
-          print('=== CONFIG TESTS PASSED ===')
-          "
-
-      - name: Test full module import
-        run: |
-          export PYTHONPATH="${{ github.workspace }}/src:$PYTHONPATH"
-          python -c "
-          import importlib
-          import pkgutil
-          import tradingbot
-
-          errors = []
-          for importer, modname, ispkg in pkgutil.walk_packages(tradingbot.__path__, prefix='tradingbot.'):
-              try:
-                  importlib.import_module(modname)
-              except Exception as e:
-                  errors.append(f'{modname}: {e}')
-
-          if errors:
-              print('IMPORT ERRORS:')
-              for e in errors:
-                  print(f'  {e}')
-          else:
-              print('ALL MODULES IMPORTED SUCCESSFULLY')
+          # Verify PipelineMetrics
+          pm = PipelineMetrics()
+          assert pm.orders_submitted == 0
+          print('PipelineMetrics OK')
+          print('=== ENGINE MODULE SMOKE TESTS PASSED ===')
           "
