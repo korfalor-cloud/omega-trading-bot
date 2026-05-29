@@ -6,6 +6,7 @@ from .api_server import APIServer
 from .event_bus import EventBus, Event, EventType
 from .rate_limiter import RateLimiter, TokenBucket
 from .report_generator import ReportGenerator, ReportData
+from .websocket_manager import WebSocketManager, WSConnection
 
 __all__ = [
     "Database", "ConfigManager", "DEFAULT_CONFIG",
@@ -13,4 +14,5 @@ __all__ = [
     "APIServer", "EventBus", "Event", "EventType",
     "RateLimiter", "TokenBucket",
     "ReportGenerator", "ReportData",
+    "WebSocketManager", "WSConnection",
 ]
