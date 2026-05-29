@@ -68,7 +68,7 @@ class CandlestickStrategy(Strategy):
         prev_body = prev.close - prev.open
         curr_body = curr.close - curr.open
 
-        # Bullish engulfing
+        # Bullish engulfing (minimum body = 10)
         if prev_body < -10 and curr_body > 10:
             if curr.open <= prev.close and curr.close >= prev.open:
                 if abs(curr_body) > abs(prev_body) * self._min_body_ratio and vol_ok:
@@ -82,7 +82,7 @@ class CandlestickStrategy(Strategy):
                         metadata={"pattern": "bullish_engulfing"},
                     )
 
-        # Bearish engulfing
+        # Bearish engulfing (minimum body = 10)
         if prev_body > 10 and curr_body < -10:
             if curr.open >= prev.close and curr.close <= prev.open:
                 if abs(curr_body) > abs(prev_body) * self._min_body_ratio and vol_ok:
@@ -128,7 +128,7 @@ class CandlestickStrategy(Strategy):
         total_range = bar.high - bar.low
         lower_shadow = min(bar.open, bar.close) - bar.low
 
-        if total_range == 0 or body < 5:
+        if total_range == 0:
             return False
         return lower_shadow > body * 2 and body / total_range < 0.3
 
@@ -138,7 +138,7 @@ class CandlestickStrategy(Strategy):
         total_range = bar.high - bar.low
         upper_shadow = bar.high - max(bar.open, bar.close)
 
-        if total_range == 0 or body < 5:
+        if total_range == 0:
             return False
         return upper_shadow > body * 2 and body / total_range < 0.3
 
