@@ -10,6 +10,7 @@ from .limits import RiskLimitsEngine, LimitType, LimitBreach, LimitCheck, RiskLi
 from .position_sizing import PositionSizer, SizingResult
 from .correlation import CorrelationAnalyzer, CorrelationResult
 from .drawdown import DrawdownMonitor, DrawdownState
+from .stress_testing import StressTester, StressResult
 
 __all__ = [
     "RiskManager", "VaRModel", "BlackScholesCalculator", "TailRiskAnalyzer",
@@ -19,4 +20,5 @@ __all__ = [
     "PositionSizer", "SizingResult",
     "CorrelationAnalyzer", "CorrelationResult",
     "DrawdownMonitor", "DrawdownState",
+    "StressTester", "StressResult",
 ]
